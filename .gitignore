@@ -214,3 +214,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.tomls
+/utils/__pycache__
+utils/__pycache__/parser.cpython-313.pyc

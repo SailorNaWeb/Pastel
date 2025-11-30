@@ -1,15 +1,21 @@
 from packages.modules import *
 
 def main():
+    EnvUtils.newSession()
+    print(EnvUtils.session)
     while True:
         entry = input('@pastel> ').strip()
         command = Parser.parse(entry)
-        ErrUtils.ePrint('a', 1020102010)
 
         if command['name'] == 'exit':
             break
         elif command['name'].strip() == '':
             continue
+        elif command['name'].startswith('$'):
+            if command['args']:
+                EnvUtils.session['sessionVariables'].append((command['name'], command['args']))
+            else:
+                ErrUtils.ePrint(command['name'], 0x000102)
         else:
             try:
                 module_name = f"commands.{command['name']}"
@@ -25,7 +31,7 @@ def main():
                 spec.loader.exec_module(module)
                 
                 if hasattr(module, 'default'):
-                    module.default(command['args']) 
+                    module.default(command['args'], command['flags']) 
                 else:
                     ErrUtils.ePrint(command['name'], 0x000400)
 

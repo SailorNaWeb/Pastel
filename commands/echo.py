@@ -1,6 +1,6 @@
 from packages.modules import *
 
-def default(args=None):
+def default(args=None, flags=None):
     if args:
         print(' '.join(args))
     else:

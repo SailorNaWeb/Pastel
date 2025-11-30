@@ -1,3 +1,6 @@
+from packages.modules import *
+import utils.env as EnvUtils
+
 def parse(command: str):
     cmdDict = command.split(' ')
 
@@ -6,7 +9,7 @@ def parse(command: str):
     flags = []
 
     for item in cmdDict[1:]:
-        if item.startswith('-'):
+        if item.startswith('-') and not commandName.startswith('$'):
             flags.append(item)
         else:
             args.append(item)
