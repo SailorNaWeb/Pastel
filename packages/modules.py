@@ -1,4 +1,4 @@
-import importlib.util, importlib.metadata, sys, os, secrets
+import importlib.util, sys, os, secrets
 
 import utils.errutils as ErrUtils
 import utils.env as EnvUtils

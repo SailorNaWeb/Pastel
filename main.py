@@ -3,12 +3,9 @@ from packages.modules import *
 def main():
     EnvUtils.newSession()
 
-    try:
-        __version__ = importlib.metadata.version('Pastel') 
-    except importlib.metadata.PackageNotFoundError:
-        __version__ = '0'
+    version = '1.0.0'
 
-    print(f'Pastel - v{__version__} | Session ID: {EnvUtils.session['id']}\n')
+    print(f'Pastel - v{version} | Session ID: {EnvUtils.session['id']}\n')
 
     while True:
         entry = input('@pastel> ').strip()
