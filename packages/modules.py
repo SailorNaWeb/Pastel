@@ -1,5 +1,10 @@
-import importlib.util, sys, os, secrets
+import importlib.util, sys, os, secrets, subprocess, ast, shlex
 
-import utils.errutils as ErrUtils
-import utils.env as EnvUtils
-import utils.parser as Parser
+from dataclasses import dataclass
+from utils.ErrorUtils import ErrorUtils
+from utils.Env import Env
+from utils.Parser import CommandParser
+
+
+env = Env()
+errorUtils = ErrorUtils()

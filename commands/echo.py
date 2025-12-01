@@ -2,6 +2,6 @@ from packages.modules import *
 
 def default(args=None, flags=None):
     if args:
-        print(' '.join(args))
+        print(str(' '.join(map(str, args))))
     else:
-        ErrUtils.ePrint(os.path.basename(__file__).replace('.py', ''), 0x000101)
+        ErrorUtils.ePrint(os.path.basename(__file__).replace('.py', ''), 0x000101)
