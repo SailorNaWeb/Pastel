@@ -1,13 +1,24 @@
+import json
+import os
+
 from src.modules import *
 
 class Prompt:
+
     def __init__(self):
+        
+        with open("src/config/core.json", "r") as core_file: # Fazer um try catch pra pegar exception dps, sepá fazer um gerador do core se ele nn exisitir
+            core_data = json.load(core_file)
+            
+            with open("src/config/" + core_data["config"] + ".json", "r") as config_file:
+                self.config_data = json.load(config_file)
+
         self.entry = ''
         self._host()
 
     def _host(self):
         env.session.new()
-        cliPrompt = StringUtils.addColor(f'%BG_BRIGHT_MAGENTA%%BOLD% @pastel %RESET%%BG_BLUE% ({os.getcwd()}) %RESET% %GREEN%$%RESET% ')
+        cliPrompt = StringUtils.addColor(f'%BG_BRIGHT_MAGENTA%%BOLD% @{self.config_data["title"]} %RESET%%BG_BLUE% ({os.getcwd()}) %RESET% %GREEN%$%RESET% ')
 
         while True:
             self.entry = input(cliPrompt)
