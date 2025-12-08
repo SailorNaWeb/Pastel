@@ -4,23 +4,28 @@ import os
 from src.modules import *
 
 class Prompt:
+    prompt = None
 
     def __init__(self):
         
-        with open("src/config/core.json", "r") as core_file: # Fazer um try catch pra pegar exception dps, sepá fazer um gerador do core se ele nn exisitir
-            core_data = json.load(core_file)
+        with open("src/config/core.json", "r") as core_file: # Fazer um try catch pra pegar exception dps, sepá fazer um gerador do core se ele nn existir
+            self.core_data = json.load(core_file)
             
-            with open("src/config/" + core_data["config"] + ".json", "r") as config_file:
+            with open("src/config/" + self.core_data["config"] + ".json", "r") as config_file:
                 self.config_data = json.load(config_file)
 
         self.entry = ''
+        Prompt.prompt = self
         self._host()
 
     def _host(self):
         env.session.new()
-        cliPrompt = StringUtils.addColor(f'%BG_BRIGHT_MAGENTA%%BOLD% @{self.config_data["title"]} %RESET%%BG_BLUE% ({os.getcwd()}) %RESET% %GREEN%$%RESET% ')
-
+        
         while True:
+            # Vou deixar aqui dentro, mas seria legal fazer um sistema de eventos para fazer ele atualizar somento quando fosse atualizado
+
+            cliPrompt = StringUtils.addColor(f'%BG_BRIGHT_MAGENTA%%BOLD% @{self.config_data["title"]} %RESET%%BG_BLUE% ({os.getcwd()}) %RESET% %GREEN%$%RESET% ')
+            
             self.entry = input(cliPrompt)
             command = CommandParser(self.entry, env)
 
@@ -30,6 +35,12 @@ class Prompt:
                 command.declareVariable(env)
             else:
                 self.loadCommand(command)
+    
+    def updateConfig(self, variable, value):
+        self.config_data[variable] = value # Tem q fazer umas verificações aqui
+
+        with open("src/config/" + self.core_data["config"] + ".json", "w") as config_file:
+            config_file.write(json.dumps(self.config_data))
 
     @staticmethod
     def loadCommand(command):
