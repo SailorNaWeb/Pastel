@@ -4,8 +4,7 @@ from decimal import Decimal, ROUND_DOWN
 commandName = os.path.basename(__file__).replace('.py', '')
 
 def default(args=None, flags=None):
-    if not ArgsUtils.boundArgs(commandName, args, 0, 3):
-        return
+    ArgsUtils.boundArgs(commandName, args, 0, 3)
     
     host = ArgsUtils.getArgument(args, 0, 'google.com')
     port = ArgsUtils.getArgument(args, 1, 80)
@@ -28,7 +27,7 @@ def default(args=None, flags=None):
         else:
             pingColor = '%RED%'
        
-        print(StringUtils.addColor(f"{host}:{port} > {pingColor}{ping}ms%RESET%"))
+        return StringUtils.addColor(f"{host}:{port} > {pingColor}{ping}ms%RESET%")
     except socket.timeout:
-        errorUtils.ePrint(commandName, 0x020001)
+        Errors.PastelNetworkError('Connection timedout.')
     

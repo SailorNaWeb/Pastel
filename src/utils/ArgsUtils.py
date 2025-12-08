@@ -1,17 +1,14 @@
-from src.utils.ErrorUtils import ErrorUtils
+import src.core.Errors as Errors
+from typing import *
 
 class ArgsUtils:
     @staticmethod
     def boundArgs(commandName: str, args: list, minArgs: int, maxArgs: int = None) -> bool:
         if len(args) < minArgs:
-            ErrorUtils.ePrint(commandName, 0x010001)
-            return False
+            Errors.PastelCommandError(f"Missing arguments for '{commandName}'.").raiseError()
 
         if maxArgs is not None and len(args) > maxArgs:
-            ErrorUtils.ePrint(commandName, 0x010003)
-            return False
-        
-        return True
+            Errors.PastelCommandError(f"Exceeded maximum arguments for '{commandName}'.").raiseError()
 
     @staticmethod
     def getArgument(args: list, index: int, default=None):

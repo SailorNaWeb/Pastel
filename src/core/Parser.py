@@ -11,26 +11,32 @@ class CommandParser:
         self._parse()
 
     def _parse(self):
-        tokens = self._tokenize(self.rawCommand)
-        if not tokens:
-            return
+        try:
+            tokens = self._tokenize(self.rawCommand)
+            if not tokens:
+                return
 
-        self.name = tokens[0]
+            self.name = tokens[0]
 
-        if self.name.startswith('$'):
-            self.isVariable = True
+            if self.name.startswith('@'):
+                self.isVariable = True
 
-        for item in tokens[1:]:
-            if item.startswith('-') and not self.isVariable:
-                self.flags.append(item)
-            else:
-                self.args.append(self._resolveValue(item))
+            for item in tokens[1:]:
+                if item.startswith('-') and not self.isVariable:
+                    self.flags.append(item)
+                else:
+                    self.args.append(self._resolveValue(item))
+        except Errors.PastelBaseError as e:
+            print(e)
 
     def _tokenize(self, command: str) -> list[str]:
-        return shlex.split(command)
+        try:
+            return shlex.split(command)
+        except Exception as e:
+            Errors.PastelSyntaxError(e).raiseError()
 
     def _resolveValue(self, value: str):
-        if self.env and value.startswith('$'):
+        if self.env and value.startswith('@'):
             if value in self.env.session.variables:
                 return self.env.session.variables[value]
         return self._convertValue(value)
@@ -68,7 +74,7 @@ class CommandParser:
             if self.args:
                 env.session.variables[self.name] = (self.args[0] if len(self.args) == 1 else self.args)
             else:
-                errorUtils.ePrint(self.name, 0x010002)
+                Errors.PastelSyntaxError(f'Malformed variable declaration.').raiseError()
 
     def toDict(self) -> dict:
         return { 'name': self.name, 'args': self.args, 'flags': self.flags }

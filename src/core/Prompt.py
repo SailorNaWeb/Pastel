@@ -1,56 +1,72 @@
-import json
-import os
-
 from src.modules import *
 
 class Prompt:
-    prompt = None
+    @dataclass
+    class Result:
+        category: str
+        value: Any
+
+        def __str__(self):
+            if isinstance(self.value, list):
+                return "\n".join(str(v) for v in self.value)
+            
+            if isinstance(self.value, dict):
+                maxKeyLen = max((len(str(k)) for k in self.value.keys()), default=0)
+                return "\n".join(f"{str(k).ljust(maxKeyLen)} : {v}" for k, v in self.value.items())
+            
+            return str(self.value)
 
     def __init__(self):
-        
-        with open("src/config/core.json", "r") as core_file: # Fazer um try catch pra pegar exception dps, sepá fazer um gerador do core se ele nn existir
-            self.core_data = json.load(core_file)
-            
-            with open("src/config/" + self.core_data["config"] + ".json", "r") as config_file:
-                self.config_data = json.load(config_file)
-
+        Prompt.instance = self
+        self.shellCwd = os.getcwd()
         self.entry = ''
-        Prompt.prompt = self
+
+        # gerador de core feito :>
+        try: # tenta abrir arquivo do core
+            with open(f'{self.shellCwd}/src/config/core.json', 'r') as coreFile:
+                self.coreData = json.load(coreFile)
+        except FileNotFoundError: # se não existir, cria um core basico
+            self.coreData = {'config': 'default'}
+            with open(f'{self.shellCwd}/src/config/core.json', 'w') as coreFile:     
+                json.dump(self.coreData, coreFile, indent=4)
+            
+        with open('src/config/' + self.coreData['config'] + '.json', 'r') as configFile:
+            self.configData = json.load(configFile)
+        
         self._host()
 
     def _host(self):
         env.session.new()
-        
-        while True:
-            # Vou deixar aqui dentro, mas seria legal fazer um sistema de eventos para fazer ele atualizar somento quando fosse atualizado
 
-            cliPrompt = StringUtils.addColor(f'%BG_BRIGHT_MAGENTA%%BOLD% @{self.config_data["title"]} %RESET%%BG_BLUE% ({os.getcwd()}) %RESET% %GREEN%$%RESET% ')
-            
+        while True:
+            cliPrompt = StringUtils.addColor(f"%BG_BRIGHT_MAGENTA%%BOLD% @{self.configData['title']} %RESET%%BG_BLUE% ({os.getcwd()}) %RESET% %GREEN%$%RESET% ")
+
             self.entry = input(cliPrompt)
             command = CommandParser(self.entry, env)
 
-            if command.name.strip() == '':
-                continue
-            elif command.isVariable:
-                command.declareVariable(env)
-            else:
-                self.loadCommand(command)
-    
+            try:
+                if command.name.strip() == '':
+                    continue
+                elif command.isVariable:
+                    command.declareVariable(env)
+                else:
+                    self.loadCommand(command)
+            except Errors.PastelBaseError as e:
+                print(e)
+
     def updateConfig(self, variable, value):
-        self.config_data[variable] = value # Tem q fazer umas verificações aqui
+        self.configData[variable] = value # Tem q fazer umas verificações aqui
 
-        with open("src/config/" + self.core_data["config"] + ".json", "w") as config_file:
-            config_file.write(json.dumps(self.config_data))
+        with open(f"{self.shellCwd}/src/config/" + self.coreData["config"] + ".json", "w") as configFile:
+            json.dump(self.configData, configFile, indent=4)
 
-    @staticmethod
-    def loadCommand(command):
+    def loadCommand(self, command):
         try:
             moduleName = f"commands.{command.name}"
-            modulePath = os.path.join('src', 'commands', f"{command.name}.py")
+            modulePath = os.path.join(self.shellCwd, 'src', 'commands', f"{command.name}.py")
 
             if not os.path.exists(modulePath):
-                ErrorUtils.ePrint(command.name, 0x010000)
-                return
+                Errors.PastelCommandError(f"'{command.name}' is not a valid command.").raiseError()
 
             spec = importlib.util.spec_from_file_location(moduleName, modulePath)
             module = importlib.util.module_from_spec(spec)
@@ -59,9 +75,11 @@ class Prompt:
             spec.loader.exec_module(module)
                     
             if hasattr(module, 'default'):
-                    module.default(command.args, command.flags) 
+                result = module.default(command.args, command.flags)
+                if result is not None: 
+                    print(Prompt.Result(command.name, result))
             else:
-                ErrorUtils.ePrint(command.name, 0x040000)
+                Errors.PastelInternalError(f"Missing 'default()' function in '{command.name}'").raiseError()
 
         except Exception as e:
-            ErrorUtils.ePrint(command.name, 0x040001, e)
+            Errors.PastelInternalError(f"An internal error occurred while executing '{command.name}':\n{e}").raiseError()

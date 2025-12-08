@@ -1,28 +1,37 @@
-from src.modules import dataclass
+from dataclasses import dataclass
+from src.utils.StringUtils import StringUtils
 
 @dataclass
-class Error:
-    code: int
-    stringCode: str
-    description: str
+class PastelBaseError(Exception):
+    category: str
+    message: str
 
-class ErrorCollection:
-    map: dict[int, tuple[str, str]] = {
-        0x000000: ("UNKNOWN_CODE", "Unknown error code (&unkwn_err&)."),
-        0x010000: ("COMMAND_NOT_FOUND", "'&cmd_name&' is not recognized as a command."),
-        0x010001: ("MISSING_ARGUMENTS", "Missing arguments for '&cmd_name&'."),
-        0x010002: ("MALFORMED_VARIABLE_DECLARATION", "Variable '&cmd_name&' is malformed."),
-        0x010003: ("EXCEEDED_MAX_ARGUMENTS", "Exceeded max arguments for '&cmd_name&'."),
-        0x020000: ("CONNECTION_TIMEOUT", "The connection has timed out."),
-        0x030000: ("FILE_NOT_FOUND", "The file was not found."),
-        0x030001: ("NOT_A_DIRECTORY", "This is not a directory."),
-        0x030002: ("PERMISSION_DENIED", "Permisssion denied..."),
-        0x040000: ("COMMAND_DEFAULT_FUNCTION_MISSING", "Function 'default()' in '&cmd_name&' is missing."),
-        0x040001: ("INTERNAL_COMMAND_EXCEPTION", "'&cmd_name&' failed to execute.")
-    }
+    def __str__(self):
+        return StringUtils.addColor(f'%BOLD%%BG_BRIGHT_RED% @pastel ERR! %RESET%%BOLD%%BG_BRIGHT_BLACK% {self.category} %RESET% : %BRIGHT_RED%{self.message}%RESET%')
+    
+    def raiseError(self) -> str:
+        raise self
+    
+class PastelSyntaxError(PastelBaseError):
+    def __init__(self, message: str):
+        super().__init__('SyntaxError', message)
 
-    @staticmethod
-    def get(target_code: int) -> Error:
-        stringCode, description = ErrorCollection.map.get(target_code, ErrorCollection.map[0x000000])
-        
-        return Error(target_code, stringCode, description)
+
+class PastelCommandError(PastelBaseError):
+    def __init__(self, message: str):
+        super().__init__('CommandError', message)
+
+
+class PastelNetworkError(PastelBaseError):
+    def __init__(self, message: str):
+        super().__init__('NetworkError', message)
+
+
+class PastelOSError(PastelBaseError):
+    def __init__(self, message: str):
+        super().__init__('OSError', message)
+
+
+class PastelInternalError(PastelBaseError):
+    def __init__(self, message: str):
+        super().__init__('InternalError', message)

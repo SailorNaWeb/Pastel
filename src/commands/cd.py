@@ -3,9 +3,9 @@ from src.modules import *
 commandName = os.path.basename(__file__).replace('.py', '')
 
 def default(args=None, flags=None):
-    if not ArgsUtils.boundArgs(commandName, args, 1):
-        return
+    ArgsUtils.boundArgs(commandName, args, 1)
 
     try:
         os.chdir(args[0])
-    except
+    except FileNotFoundError:
+        Errors.PastelOSError(f"Directory not found.")
