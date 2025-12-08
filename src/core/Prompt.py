@@ -55,10 +55,13 @@ class Prompt:
                 print(e)
 
     def updateConfig(self, variable, value):
-        self.configData[variable] = value # Tem q fazer umas verificações aqui
+        if variable in self.configData:
+            self.configData[variable] = value
 
-        with open(f"{self.shellCwd}/src/config/" + self.coreData["config"] + ".json", "w") as configFile:
-            json.dump(self.configData, configFile, indent=4)
+            with open(f"{self.shellCwd}/src/config/" + self.coreData["config"] + ".json", "w") as configFile:
+                json.dump(self.configData, configFile, indent=4)
+        else:
+            Errors.PastelCommandError(f"Invalid config '{variable}'.").raiseError()
 
     def loadCommand(self, command):
         try:
