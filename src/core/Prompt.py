@@ -17,22 +17,23 @@ class Prompt:
             return str(self.value)
 
     def __init__(self):
-        Prompt.instance = self
-        self.shellCwd = os.getcwd()
         self.entry = ''
+        self.shellCwd = os.getcwd()
+        self.configPath = os.path.join(self.shellCwd, 'src', 'config')
 
         # gerador de core feito :>
         try: # tenta abrir arquivo do core
-            with open(f'{self.shellCwd}/src/config/core.json', 'r') as coreFile:
+            with open(os.path.join(self.configPath, 'core.json'), 'r') as coreFile:
                 self.coreData = json.load(coreFile)
         except FileNotFoundError: # se não existir, cria um core basico
             self.coreData = {'config': 'default'}
-            with open(f'{self.shellCwd}/src/config/core.json', 'w') as coreFile:     
+            with open(os.path.join(self.configPath, 'core.json'), 'w') as coreFile:  
                 json.dump(self.coreData, coreFile, indent=4)
             
-        with open('src/config/' + self.coreData['config'] + '.json', 'r') as configFile:
+        with open(os.path.join(self.configPath, self.coreData['config'] + '.json'), 'r') as configFile:
             self.configData = json.load(configFile)
         
+        Prompt.instance = self
         self._host()
 
     def _host(self):
@@ -51,6 +52,8 @@ class Prompt:
                     command.declareVariable(env)
                 else:
                     self.loadCommand(command)
+
+                env.session.logs.append(command.rawCommand)
             except Errors.PastelBaseError as e:
                 print(e)
 
@@ -58,7 +61,7 @@ class Prompt:
         if variable in self.configData:
             self.configData[variable] = value
 
-            with open(f"{self.shellCwd}/src/config/" + self.coreData["config"] + ".json", "w") as configFile:
+            with open(os.path.join(self.configPath, self.coreData['config'] + '.json'), 'w') as configFile:
                 json.dump(self.configData, configFile, indent=4)
         else:
             Errors.PastelCommandError(f"Invalid config '{variable}'.").raiseError()

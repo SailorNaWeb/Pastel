@@ -1,37 +1,35 @@
 from src.modules import *
 
-# Um adentro aqui, é sempre bom usar "magic values" (sla se o termo existe, derivei de "magic numbers"), q é basicamente você colocar valos fixos
-# (nesse caso opções de um switch case) em variáveis bem definidas, deixa mais bonito :)
-
-# boa ideia btww - chip
-
-class Options:
-    EDIT_THEME = "et"
-    TITLE = "title"
-    HELP = "h"
-
-MENU_AJUDA = "Bem-vindo ao centro de configuração do pastel\nComandos:\n\net : Configuração do tema\n\t uso: pastel et [elemento a ser editado]\nh : Mostra esse menu\n"
-
 commandName = os.path.basename(__file__).replace('.py', '')
 
-def default(args: None, flags: None) :
-    if len(args) > 0 :
-        match args[0]:
-            case Options.HELP:
-                print(MENU_AJUDA)
-            case Options.EDIT_THEME:
-                if len(args) > 1:
-                    match args[1]:
-                        case Options.TITLE:
-                            if len(args) > 2:
-                                changeTitle(args[2])
-                            else :
-                                print("Insira o novo título: ")
-                                title = input()
-                                changeTitle(title)
+# a sailor vai me matar :sob:
 
-    else :
-        print(MENU_AJUDA)
+class Options:
+    HELP = 'help'
+    EDIT_THEME = 'edit-theme'
+    TITLE = 'title'
 
-def changeTitle(title):
-    Prompt.instance.updateConfig("title", title)
+def default(args=None, flags=None):
+    HELP_MESSAGE = StringUtils.addColor('''
+%BG_BLUE%  Config Hub  %RESET%
+    %BRIGHT_BLUE%Welcome to Pastel's Config Hub!%RESET%
+    
+    %GREEN%Usage%RESET%: %YELLOW%pastel %CYAN%<option> <attr> <value>%RESET%
+''')
+    
+    category = ArgsUtils.getArgument(args, 0)
+    attr = ArgsUtils.getArgument(args, 1)
+    value = ArgsUtils.getArgument(args, 2)
+
+    if not category or not attr or category == Options.HELP:
+        return HELP_MESSAGE
+
+    match category:
+        case Options.EDIT_THEME:
+            match attr:
+                case Options.TITLE:
+                    if value:
+                        Prompt.instance.updateConfig(Options.TITLE, value)
+                    else:
+                        value = input(f">> Insert value for '{attr}': ")
+                        Prompt.instance.updateConfig(Options.TITLE, value)
