@@ -1,9 +1,12 @@
 from src.modules import *
 
-commandName = os.path.basename(__file__).replace('.py', '')
+class CommandManifest:
+    NAME = 'version'
+    DESCRIPTION = 'Returns the current Git commit hash.'
+    ARGS = []
+    FLAGS = []
 
-def default(args=None, flags=None):
-    ArgsUtils.boundArgs(commandName, args, 0)
-    
-    message = env.getCommitHash()
-    return message
+    @staticmethod
+    def execute(args=None, flags=None, stdin=None):
+        message = env.getCommitHash()
+        return message

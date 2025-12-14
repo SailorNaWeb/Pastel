@@ -54,3 +54,46 @@ class StringUtils:
             return getattr(ANSIColors, token, match.group(0))
         
         return colorPattern.sub(replacer, string)
+
+    @staticmethod
+    def getFriendlyTypeName(typeClass) -> str:
+        typeMap = {
+            str: "String",
+            int: "Integer",
+            float: "Float",
+            bool: "Boolean",
+            list: "List"
+        }
+
+        if typeClass is None:
+            return "Any"
+
+        if isinstance(typeClass, tuple):
+            return "Tuple"
+
+        if typeClass in typeMap:
+            return typeMap[typeClass]
+    
+        if isinstance(typeClass, type):
+            return typeClass.__name__.capitalize()
+
+        if isinstance(typeClass, str):
+            return typeClass
+
+        return str(typeClass)
+
+
+    
+    @staticmethod
+    def buildUsage(manifest):
+        usage = manifest.NAME
+        for arg in getattr(manifest, 'ARGS', []):
+            if arg.get('required', False):
+                usage += f" <{arg['name']}: {StringUtils.getFriendlyTypeName(arg['type'])}>"
+            else:
+                usage += f" [{arg['name']}: {StringUtils.getFriendlyTypeName(arg['type'])}]"
+        
+        for flag in getattr(manifest, "FLAGS", []):
+            usage += f" [-{flag['name']}]"
+
+        return usage

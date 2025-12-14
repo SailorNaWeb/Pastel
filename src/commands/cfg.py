@@ -1,10 +1,30 @@
 from src.modules import *
 
-commandName = os.path.basename(__file__).replace('.py', '')
+class CommandManifest:
+    NAME = 'cfg'
+    DESCRIPTION = 'Modifies your personal configs.'
+    ARGS = [
+        {
+            'name': 'ConfKey',
+            'type': str,
+            'required': True,
+            'description': 'The config key to be modified'
+        },
+        {
+            'name': 'ConfValue',
+            'type': Any,
+            'required': True,
+            'description': 'Value to be assigned to the key'
+        }
+    ]
+    FLAGS = [
+        {
+            'name': 'force',
+            'type': bool,
+            'description': 'Forces the assignment of the key'
+        }
+    ]
 
-def default(args=None, flags=None):
-    ArgsUtils.boundArgs(commandName, args, 2)
-    configName = ArgsUtils.getArgument(args, 0)
-    configValue = ArgsUtils.getArgument(args, 1)
-
-    Prompt.instance.updateConfig(configName, configValue)
+    @staticmethod
+    def execute(args=None, flags=None, stdin=None):
+        Prompt.instance.configManager.set(args[0], args[1], True if 'force' in flags else False)

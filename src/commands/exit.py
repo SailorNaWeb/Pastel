@@ -1,6 +1,11 @@
 from src.modules import *
 
-commandName = os.path.basename(__file__).replace('.py', '')
+class CommandManifest:
+    NAME = 'exit'
+    DESCRIPTION = 'Exits the current Pastel session.'
+    ARGS = []
+    FLAGS = []
 
-def default(args=None, flags=None):
-    return sys.exit(0)
+    @staticmethod
+    def execute(args=None, flags=None, stdin=None):
+        return sys.exit(0)

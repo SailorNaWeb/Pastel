@@ -1,11 +1,22 @@
 from src.modules import *
 
-commandName = os.path.basename(__file__).replace('.py', '')
+class CommandManifest:
+    NAME = 'cd'
+    DESCRIPTION = 'Changes your current directory.'
+    ARGS = [
+        {
+            'name': 'DirName',
+            'required': True,
+            'type': str,
+            'description': 'Directory to be acessed'
+        }
+    ]
+    FLAGS = []
 
-def default(args=None, flags=None):
-    ArgsUtils.boundArgs(commandName, args, 1)
-
-    try:
-        os.chdir(args[0])
-    except FileNotFoundError:
-        Errors.PastelOSError(f"Directory not found.")
+    def execute(args=None, flags=None, stdin=None):
+        try:
+            os.chdir(args[0])
+        except FileNotFoundError:
+            Errors.PastelOSError(f"Directory '{args[0]}' not found.").raiseError()
+        except PermissionError:
+            Errors.PastelOSError(f"Not enough permissions to access '{args[0]}'")

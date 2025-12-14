@@ -1,8 +1,11 @@
 from src.modules import *
 
-commandName = os.path.basename(__file__).replace('.py', '')
+class CommandManifest:
+    NAME = 'clear'
+    DESCRIPTION = 'Cleans the terminal screen.'
+    ARGS = []
+    FLAGS = []
 
-def default(args=None, flags=None):
-    ArgsUtils.boundArgs(commandName, args, 0)
-    
-    return '\033[3J\033[H\033[2J'
+    @staticmethod
+    def execute(args=None, flags=None, stdin=None):
+        return '\033[3J\033[H\033[2J'
